@@ -26,7 +26,7 @@ sequenceDiagram
     VectorRepository->>WeaviateClient: Queries Weaviate
     WeaviateClient->>Weaviate: Executes GraphQL Query
     Weaviate-->>WeaviateClient: Returns Vector Data
-    WeaviateClient-->>VectorRepository: Returns Vector Data  // <---- ADDED THIS LINE
+    WeaviateClient-->>VectorRepository: Returns Vector Data
     VectorRepository-->>RAGService: Returns Vector Data
     RAGService->>OllamaClient: Calls getResponse(augmentedQuery)
     OllamaClient->>Ollama: Sends Prompt
