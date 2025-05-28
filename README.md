@@ -15,23 +15,17 @@ sequenceDiagram
     participant RAGService
     participant VectorRepository
     participant WeaviateClient
-    participant WeaviateVectorDB as Weaviate
+    participant Weaviate
     participant OllamaClient
-    participant OllamaLLM as Ollama
+    participant Ollama
 
     User->>HTTP Client: Sends HTTP Request (e.g., "What is RAG?")
     HTTP Client->>RAGController: Receives HTTP Request
     RAGController->>RAGService: Calls generateResponse(query)
     RAGService->>VectorRepository: Calls queryVector(query)
-    alt Using Weaviate
-        VectorRepository->>WeaviateClient: Queries Weaviate
-        WeaviateClient->>Weaviate: Executes GraphQL Query
-        Weaviate-->>WeaviateClient: Returns Vector Data
-    else Using Pinecone
-        VectorRepository->>PineconeClient: Queries Pinecone
-        PineconeClient->>Pinecone: Executes Query
-        Pinecone-->>PineconeClient: Returns Vector Data
-    end
+    VectorRepository->>WeaviateClient: Queries Weaviate
+    WeaviateClient->>Weaviate: Executes GraphQL Query
+    Weaviate-->>WeaviateClient: Returns Vector Data
     VectorRepository-->>RAGService: Returns Vector Data
     RAGService->>OllamaClient: Calls getResponse(augmentedQuery)
     OllamaClient->>Ollama: Sends Prompt
