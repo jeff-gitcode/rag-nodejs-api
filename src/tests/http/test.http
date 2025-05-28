@@ -1,0 +1,37 @@
+POST http://localhost:3000/api/rag/generate
+Content-Type: application/json
+
+{
+  "query": "What is Retrieval Augmented Generation?"
+}
+
+###
+
+POST http://localhost:3000/api/rag/generate
+Content-Type: application/json
+
+{
+  "query": "Explain the benefits of using Langchain with LLMs."
+}
+
+###
+# Test Ollama directly
+POST http://localhost:11434/api/generate
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "prompt": "Why is the sky blue?"
+}
+
+###
+# Test Ollama directly - chat endpoint
+POST http://localhost:11434/api/chat
+Content-Type: application/json
+
+{
+  "model": "llama3.2",
+  "messages": [
+    { "role": "user", "content": "why is the sky blue?" }
+  ]
+}
