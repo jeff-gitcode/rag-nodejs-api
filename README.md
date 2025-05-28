@@ -1,4 +1,4 @@
-# RAG Node.js API
+# RAG LLM Node.js API
 
 ## Overview
 This project implements a Retrieval Augmented Generation (RAG) API using Node.js and TypeScript. It leverages Langchain for RAG, Pinecone as the vector database, and Ollama as the language model, all while adhering to clean architecture principles.
