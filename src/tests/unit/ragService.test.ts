@@ -1,17 +1,17 @@
-import { RAGService } from '../../application/services/ragService';
-import { VectorRepository } from '../../infrastructure/database/repositories/vectorRepository';
-import { OllamaClient } from '../../infrastructure/llm/ollamaClient';
-import { PineconeClient } from '../../infrastructure/database/pineconeClient';
+import { RAGService } from '@application/services/ragService';
+import { VectorRepository } from '@infrastructure/database/repositories/vectorRepository';
+import { OllamaClient } from '@infrastructure/llm/ollamaClient';
+import { WeaviateClient } from '@infrastructure/database/weaviateClient';
 
 describe('RAGService', () => {
     let ragService: RAGService;
     let vectorRepository: VectorRepository;
     let ollamaClient: OllamaClient;
-    let pineconeClient: PineconeClient;
+    let weaviateClient: WeaviateClient;
 
     beforeEach(() => {
-        pineconeClient = new PineconeClient('', ''); // Create a mock PineconeClient
-        vectorRepository = new VectorRepository(pineconeClient); // Pass the mock PineconeClient
+        weaviateClient = new WeaviateClient(); // Create a mock WeaviateClient
+        vectorRepository = new VectorRepository(weaviateClient); // Pass the mock WeaviateClient
         ollamaClient = new OllamaClient();
         ragService = new RAGService(vectorRepository, ollamaClient);
     });

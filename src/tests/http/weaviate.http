@@ -1,3 +1,10 @@
+
+# Verify Weaviate Schema
+GET http://localhost:8081/v1/schema
+Content-Type: application/json
+
+###
+
 POST http://localhost:3000/api/rag/generate
 Content-Type: application/json
 
@@ -42,7 +49,7 @@ POST http://localhost:3000/api/rag/insert
 Content-Type: application/json
 
 {
-  "id": "doc1",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "content": "Retrieval-Augmented Generation (RAG) is a technique that combines the strengths of retrieval-based methods and generative models.",
   "metadata": {
     "author": "Test User",
@@ -57,7 +64,7 @@ POST http://localhost:3000/api/rag/insert
 Content-Type: application/json
 
 {
-  "id": "doc2",
+  "id": "123e4567-e89b-12d3-a456-426614174001",
   "content": "Langchain is a framework for developing applications powered by language models. It enables building context-aware and reasoning applications.",
   "metadata": {
     "author": "Test User",
@@ -105,4 +112,13 @@ Content-Type: application/json
   "messages": [
     { "role": "user", "content": "why is the sky blue?" }
   ]
+}
+
+###
+# Directly query Weaviate
+POST http://localhost:8081/v1/graphql
+Content-Type: application/json
+
+{
+  "query": "{ Get { Document { content metadata } } }"
 }

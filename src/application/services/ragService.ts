@@ -28,8 +28,50 @@ export class RAGService implements IRAGService {
         return response;
     }
 
-    private augmentQuery(queryModel: QueryModel, vectorData: any): string {
-        // Logic to augment the query with vector data
-        return `${queryModel.text} ${vectorData}`;
+    private augmentQuery(queryModel: QueryModel, vectorData: any[]): string {
+        // Extract content from vector data to use as context
+        const context = vectorData
+            .map(item => item.content)
+            .filter(Boolean)
+            .join('\n\n');
+
+        // Augment the query with the retrieved context
+        return `Answer the following question based on the provided context.
+        
+    Context:
+    ${context}
+    
+    Question: ${queryModel.text}
+    
+    Answer:`;
+    }
+
+    async insertData(content: string, metadata: any): Promise<string> {
+        // Generate a unique UUID for the document
+        const id = crypto.randomUUID();
+
+        // Generate vector embedding for the content
+        const vector = await this.generateEmbedding(content);
+
+        // Call the upsertVector method of the VectorRepository
+        await this.vectorRepository.upsertVector({
+            id: id,
+            content: content,
+            vector: vector,
+            metadata: metadata.topic
+        });
+
+        return id;
+    }
+
+    async clearData(): Promise<void> {
+        await this.vectorRepository.clearAll();
+    }
+
+    // Dummy function for generating embeddings - replace with actual implementation
+    private async generateEmbedding(text: string): Promise<number[]> {
+        // Replace this with actual embedding generation logic
+        console.log(`Generating embedding for text: ${text}`);
+        return Array.from({ length: 1536 }, () => Math.random()); // Dummy vector
     }
 }
