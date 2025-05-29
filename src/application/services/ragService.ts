@@ -21,11 +21,11 @@ export class RAGService implements IRAGService {
         this.embeddingService = embeddingService;
     }
 
-    async generateResponse(query: string): Promise<string> {
+    async generateResponse(query: string, topic: string): Promise<string> {
         const queryModel = new QueryModel(query);
         console.log('Generating response for query:', queryModel.text);
 
-        const vectorData = await this.vectorRepository.queryVector(queryModel.text, 3); // Limit to top 3 results
+        const vectorData = await this.vectorRepository.queryVectorByContentAndTopic(queryModel.text, topic, 3); // Limit to top 3 results
         console.log('Top 3 most relevant documents retrieved:');
         vectorData.forEach((item, index) => {
             console.log(`${index + 1}. ${item.content.substring(0, 100)}... (certainty: ${item._additional?.certainty || 'N/A'})`);

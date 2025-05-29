@@ -101,6 +101,81 @@ export class WeaviateClient {
         }
     }
 
+    async queryVectorByContentAndTopic(query: string, topic: string | null = null, limit: number = 10): Promise<any[]> {
+        try {
+            let graphqlQuery;
+
+            if (topic) {
+                console.log(`Performing semantic search for: "${query}" with topic filter: "${topic}" (limit: ${limit})`);
+                graphqlQuery = {
+                    query: `
+                        {
+                            Get {
+                                ${this.className}(
+                                    limit: ${limit},
+                                    where: {
+                                        path: ["metadata"],
+                                        operator: Equal,
+                                        valueString: "${topic}"
+                                    },
+                                    nearText: {
+                                        concepts: ["${query}"],
+                                        certainty: 0.7
+                                    }
+                                ) {
+                                    content
+                                    metadata
+                                    _additional {
+                                        certainty
+                                        id
+                                    }
+                                }
+                            }
+                        }
+                    `
+                };
+            } else {
+                console.log(`Performing semantic search for: "${query}" without topic filter (limit: ${limit})`);
+                graphqlQuery = {
+                    query: `
+                        {
+                            Get {
+                                ${this.className}(
+                                    limit: ${limit},
+                                    nearText: {
+                                        concepts: ["${query}"],
+                                        certainty: 0.7
+                                    }
+                                ) {
+                                    content
+                                    metadata
+                                    _additional {
+                                        certainty
+                                        id
+                                    }
+                                }
+                            }
+                        }
+                    `
+                };
+            }
+
+            const response = await axios.post(`${this.baseUrl}/v1/graphql`, graphqlQuery);
+
+            if (response.data?.data?.Get?.[this.className]) {
+                const results = response.data.data.Get[this.className];
+                console.log(`Found ${results.length} matches${topic ? ` for topic '${topic}'` : ''}`);
+                return results;
+            }
+
+            console.log(`No matches found${topic ? ` for topic '${topic}'` : ''}`);
+            return [];
+        } catch (error) {
+            console.error('Error querying Weaviate:', error);
+            throw new Error(`Error querying Weaviate: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+    }
+
     async upsertVector(id: string, content: string, vector: number[], metadata: string): Promise<void> {
         console.log(`Upserting vector to Weaviate: id=${id}, content length=${content.length}, vector length=${vector.length}`);
         console.log(`Metadata type: ${typeof metadata}, value: ${metadata}`); // Log metadata type and value

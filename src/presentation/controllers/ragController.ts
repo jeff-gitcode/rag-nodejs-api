@@ -12,20 +12,20 @@ export class RAGController {
         // Use Weaviate for vector storage
         const weaviateClient = new WeaviateClient();
         const vectorRepository = new VectorRepository(weaviateClient);
-        
+
         // Create LLM client
         const llmClient = new OllamaClient();
-        
+
         // Create embedding service
         const embeddingService = new OllamaEmbeddingService();
-        
+
         // Create RAG service with all dependencies
         this.ragService = new RAGService(vectorRepository, llmClient, embeddingService);
     }
 
     public async handleQuery(req: Request, res: Response): Promise<void> {
         try {
-            const { query } = req.body;
+            const { query, topic } = req.body;
             console.log('Received query:', query);
 
             if (!query) {
@@ -33,7 +33,7 @@ export class RAGController {
                 return;
             }
 
-            const response = await this.ragService.generateResponse(query);
+            const response = await this.ragService.generateResponse(query, topic);
             res.status(200).json({ response });
         } catch (error) {
             res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });

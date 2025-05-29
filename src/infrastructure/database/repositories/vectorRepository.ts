@@ -23,6 +23,14 @@ export class VectorRepository {
         return await this.client.queryVector(query, limit);
     }
 
+    async queryVectorByContentAndTopic(query: string, topic: string | null = null, limit: number = 10): Promise<any[]> {
+        if (this.isWeaviate) {
+            return await (this.client as WeaviateClient).queryVectorByContentAndTopic(query, topic, limit);
+        } else {
+            throw new Error("Combined content and topic query not supported for this vector database");
+        }
+    }
+
     // Add this method to VectorRepository class
     async clearAll(): Promise<void> {
         try {
