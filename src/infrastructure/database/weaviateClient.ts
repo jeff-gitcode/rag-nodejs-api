@@ -24,21 +24,32 @@ export class WeaviateClient {
         try {
             await axios.post(`${this.baseUrl}/v1/schema`, {
                 class: this.className,
-                vectorizer: "none", // Explicitly set vectorizer to "none"
+                vectorizer: "text2vec-transformers", // Using transformer-based vectorizer
                 properties: [
                     {
                         name: 'content',
-                        dataType: ['text'], // Ensure "content" is of type "text"
-                        description: "The main content of the document"
+                        dataType: ['text'],
+                        description: "The main content of the document",
+                        moduleConfig: {
+                            "text2vec-transformers": {
+                                skip: false,
+                                vectorizePropertyName: false
+                            }
+                        }
                     },
                     {
                         name: 'metadata',
-                        dataType: ['text'], // Correct "metadata" to type "text"
-                        description: "Additional metadata for the document"
+                        dataType: ['text'],
+                        description: "Additional metadata for the document",
+                        moduleConfig: {
+                            "text2vec-transformers": {
+                                skip: true // Skip vectorization for metadata
+                            }
+                        }
                     }
                 ],
                 vectorIndexConfig: {
-                    distance: "cosine", // Ensure distance metric is "cosine"
+                    distance: "cosine", // Using cosine similarity for vector matching
                     efConstruction: 128,
                     maxConnections: 64
                 }
@@ -52,15 +63,24 @@ export class WeaviateClient {
 
     async queryVector(query: string, limit: number = 10): Promise<any[]> {
         try {
+            console.log(`Performing semantic search for: "${query}" (limit: ${limit})`);
             const graphqlQuery = {
                 query: `
                     {
                         Get {
                             ${this.className}(
-                                limit: ${limit}
+                                limit: ${limit},
+                                nearText: {
+                                    concepts: ["${query}"],
+                                    certainty: 0.7
+                                }
                             ) {
                                 content
                                 metadata
+                                _additional {
+                                    certainty
+                                    id
+                                }
                             }
                         }
                     }
@@ -70,8 +90,10 @@ export class WeaviateClient {
             const response = await axios.post(`${this.baseUrl}/v1/graphql`, graphqlQuery);
 
             if (response.data?.data?.Get?.[this.className]) {
+                console.log(`Found ${response.data.data.Get[this.className].length} matches`);
                 return response.data.data.Get[this.className];
             }
+            console.log("No matches found");
             return [];
         } catch (error) {
             console.error('Error querying Weaviate:', error);

@@ -1,23 +1,35 @@
-import { IRAGService } from "@application/interfaces/IRAGService";
-import { QueryModel } from "@domain/models/queryModel";
-import { VectorRepository } from "@infrastructure/database/repositories/vectorRepository";
-import { OllamaClient } from "@infrastructure/llm/ollamaClient";
+// src/application/services/ragService.ts
+import { IRAGService } from "../interfaces/IRAGService";
+import { IEmbeddingService } from "../interfaces/IEmbeddingService";
+import { QueryModel } from "../../domain/models/queryModel";
+import { VectorRepository } from "../../infrastructure/database/repositories/vectorRepository";
+import { OllamaClient } from "../../infrastructure/llm/ollamaClient";
+import crypto from "crypto";
 
 export class RAGService implements IRAGService {
     private readonly vectorRepository: VectorRepository;
     private readonly llmClient: OllamaClient;
+    private readonly embeddingService: IEmbeddingService;
 
-    constructor(vectorRepository: VectorRepository, llmClient: OllamaClient) {
+    constructor(
+        vectorRepository: VectorRepository,
+        llmClient: OllamaClient,
+        embeddingService: IEmbeddingService
+    ) {
         this.vectorRepository = vectorRepository;
         this.llmClient = llmClient;
+        this.embeddingService = embeddingService;
     }
 
     async generateResponse(query: string): Promise<string> {
         const queryModel = new QueryModel(query);
         console.log('Generating response for query:', queryModel.text);
 
-        const vectorData = await this.vectorRepository.queryVector(queryModel.text);
-        console.log('Vector data retrieved:', vectorData);
+        const vectorData = await this.vectorRepository.queryVector(queryModel.text, 3); // Limit to top 3 results
+        console.log('Top 3 most relevant documents retrieved:');
+        vectorData.forEach((item, index) => {
+            console.log(`${index + 1}. ${item.content.substring(0, 100)}... (certainty: ${item._additional?.certainty || 'N/A'})`);
+        });
 
         const augmentedQuery = this.augmentQuery(queryModel, vectorData);
         console.log('Augmented query:', augmentedQuery);
@@ -50,8 +62,8 @@ export class RAGService implements IRAGService {
         // Generate a unique UUID for the document
         const id = crypto.randomUUID();
 
-        // Generate vector embedding for the content
-        const vector = await this.generateEmbedding(content);
+        // Generate vector embedding for the content using the injected embedding service
+        const vector = await this.embeddingService.generateEmbedding(content);
 
         // Call the upsertVector method of the VectorRepository
         await this.vectorRepository.upsertVector({
@@ -66,12 +78,5 @@ export class RAGService implements IRAGService {
 
     async clearData(): Promise<void> {
         await this.vectorRepository.clearAll();
-    }
-
-    // Dummy function for generating embeddings - replace with actual implementation
-    private async generateEmbedding(text: string): Promise<number[]> {
-        // Replace this with actual embedding generation logic
-        console.log(`Generating embedding for text: ${text}`);
-        return Array.from({ length: 1536 }, () => Math.random()); // Dummy vector
     }
 }

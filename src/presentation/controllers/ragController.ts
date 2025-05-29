@@ -2,32 +2,25 @@ import { Request, Response } from 'express';
 import { RAGService } from '@application/services/ragService';
 import { VectorRepository } from '@infrastructure/database/repositories/vectorRepository';
 import { OllamaClient } from '@infrastructure/llm/ollamaClient';
-import { PineconeClient } from '@infrastructure/database/pineconeClient';
 import { WeaviateClient } from '@infrastructure/database/weaviateClient';
+import { OllamaEmbeddingService } from '@infrastructure/llm/ollamaEmbeddingService';
 
 export class RAGController {
     private readonly ragService: RAGService;
 
     constructor() {
-        // Determine which vector database to use based on environment
-        const useWeaviate = process.env.VECTOR_DB === 'weaviate' || !process.env.PINECONE_API_KEY;
-        let vectorRepository;
-        console.log(`Using ${useWeaviate ? 'Weaviate' : 'Pinecone'} for vector storage`);
-        // if (useWeaviate) {
-        // Use Weaviate for local development
+        // Use Weaviate for vector storage
         const weaviateClient = new WeaviateClient();
-        vectorRepository = new VectorRepository(weaviateClient);
-        // } else {
-        //     // Use Pinecone for production
-        //     const pineconeClient = new PineconeClient(
-        //         process.env.PINECONE_API_KEY ?? '',
-        //         process.env.PINECONE_ENVIRONMENT ?? ''
-        //     );
-        //     vectorRepository = new VectorRepository(pineconeClient);
-        // }
-
+        const vectorRepository = new VectorRepository(weaviateClient);
+        
+        // Create LLM client
         const llmClient = new OllamaClient();
-        this.ragService = new RAGService(vectorRepository, llmClient);
+        
+        // Create embedding service
+        const embeddingService = new OllamaEmbeddingService();
+        
+        // Create RAG service with all dependencies
+        this.ragService = new RAGService(vectorRepository, llmClient, embeddingService);
     }
 
     public async handleQuery(req: Request, res: Response): Promise<void> {

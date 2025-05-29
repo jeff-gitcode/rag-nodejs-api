@@ -1,0 +1,135 @@
+# Clear all data from the vector database
+POST http://localhost:3000/api/rag/clear
+Content-Type: application/json
+
+{}
+
+###
+
+# 1 Insert animal-related content for similarity search testing
+POST http://localhost:3000/api/rag/insert
+Content-Type: application/json
+
+{
+  "content": "Lions are large carnivorous felines found primarily in Africa. They are known for their distinctive manes and are apex predators in their ecosystem, hunting in coordinated groups called prides.",
+  "metadata": {
+    "author": "Wildlife Expert",
+    "topic": "Big Cats"
+  }
+}
+
+### 2
+
+POST http://localhost:3000/api/rag/insert
+Content-Type: application/json
+
+{
+  "content": "Elephants are the largest land mammals on Earth, characterized by their long trunks, tusks, and large ears. They have complex social structures and are known for their intelligence and memory.",
+  "metadata": {
+    "author": "Wildlife Expert",
+    "topic": "Megafauna"
+  }
+}
+
+### 3
+
+POST http://localhost:3000/api/rag/insert
+Content-Type: application/json
+
+{
+  "content": "Tigers are the largest species of big cats and are native to Asia. They have distinctive orange fur with black stripes, are solitary hunters, and are endangered due to habitat loss and poaching.",
+  "metadata": {
+    "author": "Wildlife Expert",
+    "topic": "Big Cats"
+  }
+}
+
+### 4
+
+POST http://localhost:3000/api/rag/insert
+Content-Type: application/json
+
+{
+  "content": "Dolphins are highly intelligent marine mammals known for their playful behavior and advanced communication skills. They use echolocation to navigate and hunt, and live in social groups called pods.",
+  "metadata": {
+    "author": "Marine Biologist",
+    "topic": "Marine Mammals"
+  }
+}
+
+### 5
+
+POST http://localhost:3000/api/rag/insert
+Content-Type: application/json
+
+{
+  "content": "Chimpanzees are great apes closely related to humans, sharing about 98.6% of our DNA. They use tools, have complex social structures, and can learn sign language to communicate with humans.",
+  "metadata": {
+    "author": "Primatologist",
+    "topic": "Primates"
+  }
+}
+
+###
+
+# Test similarity search with various animal queries
+POST http://localhost:3000/api/rag/generate
+Content-Type: application/json
+
+{
+  "query": "Tell me about big cats in the wild"
+}
+
+###
+
+POST http://localhost:3000/api/rag/generate
+Content-Type: application/json
+
+{
+  "query": "What are the characteristics of elephants?"
+}
+
+###
+
+POST http://localhost:3000/api/rag/generate
+Content-Type: application/json
+
+{
+  "query": "How intelligent are dolphins?"
+}
+
+###
+
+POST http://localhost:3000/api/rag/generate
+Content-Type: application/json
+
+{
+  "query": "Compare chimps and humans"
+}
+
+###
+
+POST http://localhost:3000/api/rag/generate
+Content-Type: application/json
+
+{
+  "query": "What animals are endangered and why?"
+}
+
+###
+# Direct test of semantic search in Weaviate
+POST http://localhost:8081/v1/graphql
+Content-Type: application/json
+
+{
+  "query": "{ Get { Document ( nearText: { concepts: [\"big cats hunting\"], certainty: 0.7 } ) { content metadata _additional { certainty id } } } }"
+}
+
+###
+# Another direct test with different query
+POST http://localhost:8081/v1/graphql
+Content-Type: application/json
+
+{
+  "query": "{ Get { Document ( nearText: { concepts: [\"intelligent marine animals\"], certainty: 0.7 } ) { content metadata _additional { certainty id } } } }"
+}
