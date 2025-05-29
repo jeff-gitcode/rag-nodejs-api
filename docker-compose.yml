@@ -8,7 +8,6 @@ services:
     volumes:
       - ./data:/data
     restart: unless-stopped
-
   # Adding Weaviate as a vector database (Pinecone alternative for local development)
   weaviate:
     image: semitechnologies/weaviate:1.20.5
@@ -19,10 +18,16 @@ services:
       QUERY_DEFAULTS_LIMIT: 25
       AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
       PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
-      DEFAULT_VECTORIZER_MODULE: 'none'
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-transformers' # Change this from 'none' to match your code
+      ENABLE_MODULES: 'text2vec-transformers' # Add this line
+      TRANSFORMERS_INFERENCE_API: 'http://t2v-transformers:8080' # Add this line
       CLUSTER_HOSTNAME: 'node1'
     volumes:
       - weaviate_data:/var/lib/weaviate
-
+  t2v-transformers:
+    image: semitechnologies/transformers-inference:sentence-transformers-multi-qa-MiniLM-L6-cos-v1
+    environment:
+      ENABLE_CUDA: '0'
+    restart: unless-stopped
 volumes:
   weaviate_data:

@@ -1,6 +1,6 @@
 // src/infrastructure/llm/ollamaEmbeddingService.ts
-import axios from 'axios';
 import { IEmbeddingService } from '@application/interfaces/IEmbeddingService';
+import axios from 'axios';
 
 export class OllamaEmbeddingService implements IEmbeddingService {
     private readonly baseUrl: string;
@@ -15,19 +15,25 @@ export class OllamaEmbeddingService implements IEmbeddingService {
 
     public async generateEmbedding(text: string): Promise<number[]> {
         try {
+            console.log(`Generating embedding for text: "${text.substring(0, 50)}..."`);
+
             const response = await axios.post(`${this.baseUrl}/api/embeddings`, {
                 model: this.model,
                 prompt: text
             });
 
             if (response.data && response.data.embedding) {
+                console.log(`Successfully generated embedding of length ${response.data.embedding.length}`);
                 return response.data.embedding;
             }
 
-            console.warn("Embedding generation failed, falling back to random vector");
-            return this.generateRandomEmbedding();
+            console.warn("Warning: Embedding generation failed, falling back to random vector");
+            const randomEmbedding = this.generateRandomEmbedding();
+            console.log(`Using random embedding of length ${randomEmbedding.length}`);
+            return randomEmbedding;
         } catch (error) {
             console.error('Error generating embeddings:', error);
+            console.warn("Error: Falling back to random embedding vector");
             return this.generateRandomEmbedding();
         }
     }

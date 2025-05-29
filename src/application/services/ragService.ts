@@ -47,13 +47,15 @@ export class RAGService implements IRAGService {
             .filter(Boolean)
             .join('\n\n');
 
-        // Augment the query with the retrieved context
+        // Augment the query with the retrieved context and request list formatting
         return `Answer the following question based on the provided context.
         
     Context:
     ${context}
     
     Question: ${queryModel.text}
+    
+    Format your answer as a bulleted list wherever appropriate. If the answer contains multiple points or items, present each in a separate bullet point starting with "- ".
     
     Answer:`;
     }
