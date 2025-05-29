@@ -13,7 +13,13 @@ sequenceDiagram
     participant HTTP Client
     participant RAGController
     participant RAGService
-    participant VectorRepository
+    
+    box RAG Components
+        participant VectorRepository
+        participant EmbeddingService
+        participant LLMClient
+    end
+    
     participant WeaviateClient
     participant Weaviate
     participant OllamaClient
@@ -21,20 +27,46 @@ sequenceDiagram
 
     User->>HTTP Client: Sends HTTP Request (e.g., "What is RAG?")
     HTTP Client->>RAGController: Receives HTTP Request
-    RAGController->>RAGService: Calls generateResponse(query)
-    RAGService->>VectorRepository: Calls queryVector(query)
-    VectorRepository->>WeaviateClient: Queries Weaviate
-    WeaviateClient->>Weaviate: Executes GraphQL Query
-    Weaviate-->>WeaviateClient: Returns Vector Data
-    WeaviateClient-->>VectorRepository: Returns Vector Data
-    VectorRepository-->>RAGService: Returns Vector Data
-    RAGService->>OllamaClient: Calls getResponse(augmentedQuery)
-    OllamaClient->>Ollama: Sends Prompt
-    Ollama-->>OllamaClient: Returns Response
-    OllamaClient-->>RAGService: Returns Response
-    RAGService-->>RAGController: Returns Response
-    RAGController->>HTTP Client: Returns HTTP Response
-    HTTP Client->>User: Displays Response
+    RAGController->>RAGService: Calls generateResponse(query, topic)
+    
+        note right of RAGService: RAG Process Begins
+        
+        RAGService->>VectorRepository: Calls queryVectorByContentAndTopic(query, topic, limit=3)
+        VectorRepository->>WeaviateClient: Queries for similar documents
+        WeaviateClient->>Weaviate: Executes Semantic Search (nearText + topic filter)
+        Weaviate-->>WeaviateClient: Returns Top 3 Relevant Documents
+        WeaviateClient-->>VectorRepository: Returns Document Data
+        VectorRepository-->>RAGService: Returns Document Data
+        
+        RAGService->>RAGService: Augments query with retrieved context
+        
+        RAGService->>LLMClient: Calls getResponse(augmentedQuery)
+        LLMClient->>Ollama: Sends Prompt with Retrieved Context
+        Ollama-->>LLMClient: Generates Response Based on Context
+        LLMClient-->>RAGService: Returns Generated Response
+        
+        note right of RAGService: RAG Process Complete
+    
+    RAGService-->>RAGController: Returns Enhanced Response
+    RAGController-->>HTTP Client: Returns HTTP Response
+    HTTP Client-->>User: Displays Response
+    
+        note right of RAGService: Document Insertion Flow
+        User->>HTTP Client: Sends Document for Indexing
+        HTTP Client->>RAGController: POST /api/rag/insert
+        RAGController->>RAGService: Calls insertData(content, metadata)
+        RAGService->>EmbeddingService: Calls generateEmbedding(content)
+        EmbeddingService->>Ollama: Requests Text Embedding
+        Ollama-->>EmbeddingService: Returns Vector Embedding
+        EmbeddingService-->>RAGService: Returns Vector Embedding
+        RAGService->>VectorRepository: Calls upsertVector(id, content, vector, metadata)
+        VectorRepository->>WeaviateClient: Stores Document with Vector
+        WeaviateClient->>Weaviate: Inserts Vector and Document
+        Weaviate-->>WeaviateClient: Confirms Storage
+        WeaviateClient-->>VectorRepository: Confirms Operation
+        VectorRepository-->>RAGService: Operation Complete
+        RAGService-->>RAGController: Returns Success
+        RAGController-->>HTTP Client: Returns Success Response
 ```
 
 ## Project Structure

@@ -1,0 +1,108 @@
+# Clear all data from the vector database
+POST http://localhost:3000/api/rag/clear
+Content-Type: application/json
+
+{}
+
+###
+
+# Test RAG API - insert some example data
+POST http://localhost:3000/api/rag/insert
+Content-Type: application/json
+
+{
+  "content": "Retrieval-Augmented Generation (RAG) is an AI framework that enhances Large Language Models by retrieving relevant information from external knowledge sources at query time.",
+  "metadata": {
+    "author": "Test User",
+    "topic": "RAG Fundamentals"
+  }
+}
+
+###
+
+POST http://localhost:3000/api/rag/insert
+Content-Type: application/json
+
+{
+  "content": "The RAG architecture combines a retriever component with a generator component. The retriever searches for relevant information while the generator produces responses based on that information.",
+  "metadata": {
+    "author": "Test User",
+    "topic": "RAG Architecture"
+  }
+}
+
+###
+
+POST http://localhost:3000/api/rag/insert
+Content-Type: application/json
+
+{
+  "content": "Vector databases like Weaviate and Pinecone are essential for RAG implementations as they enable efficient semantic search across large document collections.",
+  "metadata": {
+    "author": "Test User",
+    "topic": "Vector Databases"
+  }
+}
+
+###
+
+POST http://localhost:3000/api/rag/insert
+Content-Type: application/json
+
+{
+  "content": "Langchain is a popular framework that simplifies building RAG applications by providing reusable components for document loading, chunking, embedding, and retrieval.",
+  "metadata": {
+    "author": "Test User",
+    "topic": "Langchain"
+  }
+}
+
+###
+
+POST http://localhost:3000/api/rag/insert
+Content-Type: application/json
+
+{
+  "content": "RAG systems help mitigate hallucination in LLMs by grounding responses in factual information from trusted sources.",
+  "metadata": {
+    "author": "Test User",
+    "topic": "RAG Benefits"
+  }
+}
+
+###
+
+# Test similarity search with various queries
+POST http://localhost:3000/api/rag/generate
+Content-Type: application/json
+
+{
+  "query": "What is RAG and how does it work?"
+}
+
+###
+
+POST http://localhost:3000/api/rag/generate
+Content-Type: application/json
+
+{
+  "query": "How do vector databases fit into RAG systems?"
+}
+
+###
+
+POST http://localhost:3000/api/rag/generate
+Content-Type: application/json
+
+{
+  "query": "What are the benefits of using RAG with language models?"
+}
+
+###
+
+POST http://localhost:3000/api/rag/generate
+Content-Type: application/json
+
+{
+  "query": "Tell me about Langchain and RAG"
+}
