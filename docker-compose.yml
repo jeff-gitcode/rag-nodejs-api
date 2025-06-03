@@ -1,4 +1,14 @@
 services:
+  api:
+    image: ${DOCKER_HUB_USERNAME}/rag-nodejs-api:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - ollama
+      - weaviate
   ollama:
     image: ollama/ollama:latest
     ports:
