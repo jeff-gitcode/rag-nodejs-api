@@ -1,3 +1,3 @@
 export interface IRAGService {
-    generateResponse(query: string): Promise<string>;
+    generateResponse(query: string, topic: string): Promise<string>;
 }
