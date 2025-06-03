@@ -55,7 +55,7 @@ describe('RAGService', () => {
             const response = await ragService.generateResponse(query, topic);
 
             // Assert
-            expect(vectorRepository.queryVector).toHaveBeenCalledWith(query, 3);
+            expect(vectorRepository.queryVector).toHaveBeenCalledWith(query, topic, 3);
             expect(ollamaClient.getResponse).toHaveBeenCalled();
             expect(response).toEqual(expectedResponse);
         });
